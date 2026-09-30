@@ -153,7 +153,6 @@ footer{text-align:center;color:#64748b;font-size:.72rem;margin-top:18px}
 </main>
 
 <footer>AI Speedtest · OpenAI-compatible endpoints</footer>
-
 <script>
 const DEFAULT_MAX_SPEED = 150;
 const MAX_TOKENS_PER_PASS = 300;
@@ -173,8 +172,10 @@ const gaugeMaxLabel = document.getElementById('gauge-max-label');
 
 function getHeaders() {
   const headers = { "Content-Type": "application/json" };
-  const key = document.getElementById('api-key').value.trim();
-  if (key) {
+  const keyInput = document.getElementById('api-key');
+  const key = keyInput ? keyInput.value.trim() : "";
+  
+  if (key.length > 0) {
     headers["Authorization"] = `Bearer ${key}`;
   }
   return headers;
@@ -215,34 +216,57 @@ function updateGauge(tps) {
 }
 
 async function fetchModels() {
-  const baseUrl = document.getElementById('api-url').value.replace(/\/$/, "");
+  const baseUrl = document.getElementById('api-url').value.trim().replace(/\/$/, "");
+  
+  if (!baseUrl) {
+    setStatus("Empty URL", "#fb7185", "#fb7185");
+    return;
+  }
+
   try {
     setStatus("Connecting…", "#fbbf24", "#fbbf24");
-    const res = await fetch(`${baseUrl}/models`, { headers: getHeaders() });
+    startBtn.disabled = true;
+    
+    const res = await fetch(`${baseUrl}/models`, { 
+      method: "GET",
+      headers: getHeaders() 
+    });
+
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
 
     modelSelect.innerHTML = "";
-    if (data.data && data.data.length) {
+    if (data.data && data.data.length > 0) {
       data.data.forEach(m => {
         const opt = document.createElement('option');
-        opt.value = m.id; opt.innerText = m.id;
+        opt.value = m.id; 
+        opt.innerText = m.id;
         modelSelect.appendChild(opt);
       });
       setStatus("API Ready", "#4ade80", "#4ade80");
       startBtn.disabled = false;
-    } else throw new Error("No models found");
+    } else {
+      throw new Error("No models found in response");
+    }
   } catch (e) {
+    console.error("Fetch models error:", e);
     setStatus("API unavailable", "#fb7185", "#fb7185");
-    modelSelect.innerHTML = "<option>N/A</option>";
+    modelSelect.innerHTML = "<option value=''>N/A</option>";
     startBtn.disabled = true;
   }
 }
 
 async function runBenchmark() {
   startBtn.disabled = true;
-  const baseUrl = document.getElementById('api-url').value.replace(/\/$/, "");
+  const baseUrl = document.getElementById('api-url').value.trim().replace(/\/$/, "");
   const model = modelSelect.value;
+  
+  if (!model) {
+    alert("Please select a valid model first.");
+    startBtn.disabled = false;
+    return;
+  }
+
   const passes = parseInt(document.getElementById('passes-select').value, 10);
   const prompt = "Write a comprehensive summary explaining how Large Language Models work, covering tokenization, attention mechanisms, and inference optimization. Be detailed and long.";
 
@@ -266,9 +290,13 @@ async function runBenchmark() {
         method: "POST",
         headers: getHeaders(),
         body: JSON.stringify({
-          model, messages:[{role:"user",content:prompt}], stream:true, max_tokens:MAX_TOKENS_PER_PASS
+          model, 
+          messages: [{role: "user", content: prompt}], 
+          stream: true, 
+          max_tokens: MAX_TOKENS_PER_PASS
         })
       });
+
       if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`);
 
       const reader = response.body.getReader();
@@ -276,9 +304,9 @@ async function runBenchmark() {
       let buffer = "";
 
       while (true) {
-        const {done,value} = await reader.read();
+        const {done, value} = await reader.read();
         if (done) break;
-        buffer += decoder.decode(value,{stream:true});
+        buffer += decoder.decode(value, {stream: true});
         const lines = buffer.split("\n");
         buffer = lines.pop();
 
@@ -288,7 +316,6 @@ async function runBenchmark() {
             if (firstTokenTime === null) firstTokenTime = performance.now();
             tokenCount++;
             
-            // Расчет плавной динамической шкалы общего прогресса
             const currentPassProgress = Math.min(tokenCount / MAX_TOKENS_PER_PASS, 1);
             const totalPercent = ((i + currentPassProgress) / passes) * 100;
             passProgress.style.width = `${totalPercent.toFixed(1)}%`;
@@ -310,7 +337,6 @@ async function runBenchmark() {
       totalDecodeTime += decodeTime;
       completedPasses++;
 
-      // Зафиксировать завершение прохода на прогресс-баре
       passProgress.style.width = `${((i + 1) / passes) * 100}%`;
     } catch (e) {
       alert("Error during benchmark execution: " + e.message);
