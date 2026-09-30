@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — Endpoint Not Found | AI Speedtest</title>
+<style>
+:root{
+  --bg:#070b12; --panel:#0d1420; --panel-2:#111a28; --line:#1d2a3a;
+  --text:#f7f9fc; --muted:#8c9aae; --blue:#5b9cff; --blue-2:#3b82f6;
+  --red:#fb7185; --shadow:0 18px 50px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+body{
+  min-height:100vh;color:var(--text);background:
+  radial-gradient(circle at 50% 20%,rgba(251,113,133,.08),transparent 35%),
+  radial-gradient(circle at 86% 75%,rgba(59,130,246,.06),transparent 28%),var(--bg);
+  padding:22px 32px 18px;
+  display:flex;flex-direction:column;justify-content:space-between;
+}
+header,.main-container,footer{max-width:1180px;margin:auto;width:100%}
+header{display:flex;justify-content:space-between;align-items:center;padding-bottom:18px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:750;letter-spacing:-.01em;text-decoration:none;color:var(--text)}
+.logo-mark{width:32px;height:32px;display:grid;place-items:center;border:1px solid #29415f;border-radius:9px;background:#0e1a2a;box-shadow:inset 0 0 20px rgba(91,156,255,.08)}
+.badge{display:flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid #3b202a;border-radius:999px;background:#180d13;color:var(--red);font-size:.78rem;font-weight:650}
+.badge-dot{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red)}
+
+.error-card{
+  max-width:560px;margin:40px auto;padding:40px 36px;
+  border:1px solid var(--line);background:linear-gradient(180deg,rgba(17,26,40,.96),rgba(10,16,25,.96));
+  box-shadow:var(--shadow);border-radius:18px;text-align:center;
+}
+
+.gauge-error-wrap{position:relative;width:240px;height:140px;margin:0 auto 20px}
+.gauge-svg{width:100%;height:100%;overflow:visible}
+.gauge-bg{stroke:#1a2635}
+.gauge-progress{stroke:var(--red);filter:drop-shadow(0 0 8px rgba(251,113,133,.3))}
+.needle{transform-origin:160px 160px;transform:rotate(-15deg);transition:transform .3s ease}
+.needle-line{stroke:#fca5a5;filter:drop-shadow(0 0 5px rgba(251,113,133,.6))}
+.needle-hub{fill:#fecdd3;stroke:var(--red);stroke-width:3}
+
+.error-code{font-size:3.5rem;font-weight:850;line-height:1;letter-spacing:-.04em;margin-bottom:8px;color:var(--text)}
+.error-title{font-size:1.1rem;font-weight:700;color:var(--muted);margin-bottom:16px}
+.error-desc{font-size:.88rem;color:var(--muted);line-height:1.6;margin-bottom:28px}
+
+.btn-home{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  background:linear-gradient(135deg,#4f91ff,#3175dc);color:white;padding:12px 24px;border-radius:10px;
+  font-weight:750;text-decoration:none;transition:transform .15s,filter .2s;
+  box-shadow:0 8px 24px rgba(37,99,235,.18);border:0;
+}
+.btn-home:hover{filter:brightness(1.08);transform:translateY(-1px)}
+
+footer{text-align:center;color:#64748b;font-size:.72rem;margin-top:18px}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="logo">
+    <div class="logo-mark">⚡</div>
+    <span>AI Speedtest <span style="color:#718096">/ API Edition</span></span>
+  </a>
+  <div class="badge"><i class="badge-dot"></i><span>404 HTTP Error</span></div>
+</header>
+
+<main class="main-container">
+  <div class="error-card">
+    <div class="gauge-error-wrap">
+      <svg class="gauge-svg" viewBox="0 0 320 200" aria-hidden="true">
+        <path class="gauge-bg" d="M 30 160 A 130 130 0 0 1 290 160" fill="none" stroke-width="12" stroke-linecap="round"/>
+        <path class="gauge-progress" d="M 30 160 A 130 130 0 0 1 290 160" fill="none" stroke-width="12" stroke-linecap="round" stroke-dasharray="408" stroke-dashoffset="380"/>
+        <g class="needle">
+          <line class="needle-line" x1="160" y1="160" x2="60" y2="160" stroke-width="4" stroke-linecap="round"/>
+          <circle class="needle-hub" cx="160" cy="160" r="8"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="error-code">404</div>
+    <div class="error-title">Endpoint Not Found</div>
+    <p class="error-desc">
+      Запрошенный маршрут не существует или локальный API не отвечает по данному URI.
+    </p>
+
+    <a href="/" class="btn-home">
+      <span>← Вернуться на главную</span>
+    </a>
+  </div>
+</main>
+
+<footer>AI Speedtest · OpenAI-compatible endpoints</footer>
+
+</body>
+</html>
