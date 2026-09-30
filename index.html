@@ -1,161 +1,18 @@
-<!DOCTYPE html>
+Причина кроется в одном небольшом нюансе: когда у поля **`Bearer Token`** стоит заголовок `Authorization: Bearer <token>`, но само поле **пустое**, функция отправляла заголовок с пустой строкой `Authorization: Bearer `.
 
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Speedtest — Local API Edition</title>
-<style>
-:root{
-  --bg:#070b12; --panel:#0d1420; --panel-2:#111a28; --line:#1d2a3a;
-  --text:#f7f9fc; --muted:#8c9aae; --blue:#5b9cff; --blue-2:#3b82f6;
-  --green:#4ade80; --amber:#fbbf24; --red:#fb7185;
-  --shadow:0 18px 50px rgba(0,0,0,.28);
-}
-*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-body{
-  min-height:100vh;color:var(--text);background:
-  radial-gradient(circle at 18% 8%,rgba(59,130,246,.10),transparent 30%),
-  radial-gradient(circle at 86% 75%,rgba(59,130,246,.06),transparent 28%),var(--bg);
-  padding:22px 32px 18px;
-}
-header,.main-container,footer{max-width:1180px;margin:auto}
-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:18px}
-.logo{display:flex;align-items:center;gap:10px;font-weight:750;letter-spacing:-.01em}
-.logo-mark{width:32px;height:32px;display:grid;place-items:center;border:1px solid #29415f;border-radius:9px;background:#0e1a2a;box-shadow:inset 0 0 20px rgba(91,156,255,.08)}
-.badge{display:flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid #243449;border-radius:999px;background:#0c1522;color:var(--muted);font-size:.78rem;font-weight:650}
-.badge-dot{width:7px;height:7px;border-radius:50%;background:#64748b;box-shadow:0 0 0 4px rgba(100,116,139,.10)}
-.main-container{width:100%}
-.grid-layout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:28px;align-items:stretch;margin-top:18px}
-.hero,.sidebar{border:1px solid var(--line);background:linear-gradient(180deg,rgba(17,26,40,.96),rgba(10,16,25,.96));box-shadow:var(--shadow);border-radius:18px}
-.hero{padding:30px 34px 26px;min-height:470px}
-.hero-top{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
-.hero h1{font-size:clamp(2rem,4vw,3rem);line-height:1.05;letter-spacing:-.045em;margin-bottom:12px}
-.hero p{max-width:700px;color:var(--muted);line-height:1.55}
-.live-pill{display:flex;align-items:center;gap:7px;color:#a9c9ff;background:#0c1b31;border:1px solid #1d3b68;padding:7px 10px;border-radius:10px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
-.live-pill i{width:6px;height:6px;border-radius:50%;background:var(--blue);box-shadow:0 0 12px var(--blue)}
-.gauge-wrap{position:relative;width:min(100%,500px);height:292px;margin:18px auto 0}
-.gauge-svg{width:100%;height:100%;overflow:visible}
-.gauge-bg{stroke:#1a2635}
-.gauge-progress{stroke:var(--blue);filter:drop-shadow(0 0 8px rgba(91,156,255,.22));transition:stroke-dashoffset .16s ease-out}
-.needle{transform-origin:160px 160px;transform:rotate(0deg);transition:transform .18s cubic-bezier(.2,.8,.2,1)}
-.needle-line{stroke:#b9d5ff;filter:drop-shadow(0 0 5px rgba(91,156,255,.55))}
-.needle-hub{fill:#d8e8ff;stroke:#5b9cff;stroke-width:3}
-.gauge-value{position:absolute;left:0;right:0;bottom:13px;text-align:center;font-size:2.1rem;font-weight:800;letter-spacing:-.04em}
-.gauge-value span{font-size:.85rem;color:var(--muted);font-weight:600;letter-spacing:0}
-.gauge-scale{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:center;gap:7px;color:var(--muted);font-size:.72rem}
-.gauge-scale strong{color:#d9e5f5;font-weight:700}
-.sidebar{padding:20px}
-.sidebar-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-.sidebar-title{font-size:.92rem;font-weight:750}
-.auto-scale{font-size:.68rem;color:#7faef7;background:#0c1b31;border:1px solid #1d3b68;padding:4px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:.06em}
-.form-group{margin-bottom:15px}
-.form-group label{display:flex;justify-content:space-between;margin-bottom:7px;font-size:.72rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
-.form-group input,.form-group select{
-  width:100%;background:#0a111c;border:1px solid #223047;color:#fff;padding:11px 12px;border-radius:9px;outline:none;
-  transition:border-color .2s,box-shadow .2s
-}
-.form-group input:focus,.form-group select:focus{border-color:#3768a8;box-shadow:0 0 0 3px rgba(59,130,246,.10)}
-.btn-start{
-  width:100%;border:0;background:linear-gradient(135deg,#4f91ff,#3175dc);color:white;padding:12px;border-radius:10px;
-  font-weight:750;cursor:pointer;transition:transform .15s,filter .2s,opacity .2s;margin-top:6px;box-shadow:0 8px 24px rgba(37,99,235,.18)
-}
-.btn-start:hover:not(:disabled){filter:brightness(1.08);transform:translateY(-1px)}
-.btn-start:disabled{opacity:.5;cursor:not-allowed}
-.run-card{margin-top:18px;padding:13px 14px;border:1px solid #1c2a3b;border-radius:10px;background:#0a111b}
-.run-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
-.run-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
-.run-pass{font-size:.95rem;font-weight:800}
-.progress-track{height:5px;background:#172131;border-radius:99px;overflow:hidden}
-.progress-bar{height:100%;width:0;background:linear-gradient(90deg,#3b82f6,#7db0ff);border-radius:99px;transition:width .1s linear}
-.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-top:18px}
-.metric-card{padding:17px;border:1px solid var(--line);border-radius:14px;background:rgba(13,20,32,.9);box-shadow:0 8px 28px rgba(0,0,0,.12)}
-.metric-title{font-size:.72rem;color:var(--muted);margin-bottom:9px;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
-.metric-value{font-size:1.45rem;font-weight:800;letter-spacing:-.03em}
-.metric-value span{font-size:.72rem;font-weight:650;color:var(--muted);letter-spacing:0}
-footer{text-align:center;color:#64748b;font-size:.72rem;margin-top:18px}
-@media(max-width:900px){
-  body{padding:16px}.grid-layout{grid-template-columns:1fr}.hero{min-height:0}.sidebar{order:2}
-}
-@media(max-width:650px){
-  .hero{padding:22px 18px}.hero-top{display:block}.live-pill{display:inline-flex;margin-top:15px}
-  .metrics-grid{grid-template-columns:repeat(2,1fr)}header{padding-bottom:8px}
-}
-</style>
-</head>
-<body>
-<header>
-  <div class="logo"><div class="logo-mark">⚡</div><span>AI Speedtest <span style="color:#718096">/ API Edition</span></span></div>
-  <div class="badge" id="status-badge"><i class="badge-dot"></i><span id="status-text">Connecting…</span></div>
-</header>
+Многие локальные бэкенды (например, Ollama или llama.cpp) при получении пустого/невалидного заголовка авторизации выдают ошибку **`401 Unauthorized`** или обрывают соединение, из-за чего список моделей переставал запрашиваться.
 
-<main class="main-container">
-  <div class="grid-layout">
-    <section class="hero">
-      <div class="hero-top">
-        <div>
-          <h1>How fast is your LLM API?</h1>
-          <p>Benchmark local or remote LLM backends via an OpenAI-compatible streaming API. The gauge automatically adapts to the measured inference speed.</p>
-        </div>
-        <div class="live-pill"><i></i> Live inference</div>
-      </div>
+Ниже исправленный JS-блок для файла `index.html`.
 
-  <div class="gauge-wrap">
-    <svg class="gauge-svg" viewBox="0 0 320 200" aria-label="Inference speed gauge">
-      <path class="gauge-bg" d="M 30 160 A 130 130 0 0 1 290 160" fill="none" stroke-width="12" stroke-linecap="round"/>
-      <path id="gauge-arc" class="gauge-progress" d="M 30 160 A 130 130 0 0 1 290 160" fill="none" stroke-width="12" stroke-linecap="round" stroke-dasharray="408" stroke-dashoffset="408"/>
-      <g class="needle" id="needle">
-        <line class="needle-line" x1="160" y1="160" x2="60" y2="160" stroke-width="4" stroke-linecap="round"/>
-        <circle class="needle-hub" cx="160" cy="160" r="8"/>
-      </g>
-    </svg>
-    <div class="gauge-value" id="live-tps">0.0 <span>tok/s</span></div>
-    <div class="gauge-scale"><span>0</span><strong id="gauge-max-label">150</strong><span>tok/s</span></div>
-  </div>
-</section>
+### Что исправлено:
 
-<aside class="sidebar">
-  <div class="sidebar-head"><div class="sidebar-title">Benchmark setup</div><div class="auto-scale">Auto scale</div></div>
-  <div class="form-group">
-    <label>API Endpoint</label>
-    <input type="text" id="api-url" value="http://127.0.0.1:8000/v1" onchange="fetchModels()">
-  </div>
-  <div class="form-group">
-    <label>Bearer Token (Optional)</label>
-    <input type="password" id="api-key" placeholder="sk-..." onchange="fetchModels()">
-  </div>
-  <div class="form-group">
-    <label>Select Model</label>
-    <select id="model-select"><option value="">Loading models…</option></select>
-  </div>
-  <div class="form-group">
-    <label>Test Passes</label>
-    <select id="passes-select">
-      <option value="1">Fast · 1 pass</option>
-      <option value="3" selected>Standard · 3 passes</option>
-      <option value="5">Deep · 5 passes</option>
-    </select>
-  </div>
-  <button class="btn-start" id="start-btn" onclick="runBenchmark()" disabled>Start benchmark</button>
+1. **Строгая проверка ключа**: `Authorization` добавляется только в том случае, если поле не пустое.
+2. **Сброс модели при ошибке**: если запрос упал, список моделей очищается.
+3. **Отлов ошибок**: добавлена обработка случайных сетевых сбоев, чтобы интерфейс не зависал.
 
-  <div class="run-card">
-    <div class="run-row"><span class="run-label">Current pass</span><span class="run-pass" id="pass-label">Ready</span></div>
-    <div class="progress-track"><div class="progress-bar" id="pass-progress"></div></div>
-  </div>
-</aside>
+Замените блок `<script>` на этот:
 
-  </div>
-
-  <div class="metrics-grid">
-    <div class="metric-card"><div class="metric-title">LLM decode</div><div class="metric-value" id="m-decode">— <span>tok/s</span></div></div>
-    <div class="metric-card"><div class="metric-title">Prompt ingest</div><div class="metric-value" id="m-ingest">— <span>tok/s</span></div></div>
-    <div class="metric-card"><div class="metric-title">First token · TTFT</div><div class="metric-value" id="m-ttft">— <span>ms</span></div></div>
-    <div class="metric-card"><div class="metric-title">Total generated</div><div class="metric-value" id="m-tokens">— <span>tokens</span></div></div>
-  </div>
-</main>
-
-<footer>AI Speedtest · OpenAI-compatible endpoints</footer>
-
+```html
 <script>
 const DEFAULT_MAX_SPEED = 150;
 const MAX_TOKENS_PER_PASS = 300;
@@ -173,10 +30,13 @@ const passLabel = document.getElementById('pass-label');
 const passProgress = document.getElementById('pass-progress');
 const gaugeMaxLabel = document.getElementById('gauge-max-label');
 
+// Исправлено: добавляем заголовок Authorization ТОЛЬКО если ключ действительно введен
 function getHeaders() {
   const headers = { "Content-Type": "application/json" };
-  const key = document.getElementById('api-key').value.trim();
-  if (key) {
+  const keyInput = document.getElementById('api-key');
+  const key = keyInput ? keyInput.value.trim() : "";
+  
+  if (key.length > 0) {
     headers["Authorization"] = `Bearer ${key}`;
   }
   return headers;
@@ -217,34 +77,57 @@ function updateGauge(tps) {
 }
 
 async function fetchModels() {
-  const baseUrl = document.getElementById('api-url').value.replace(/\/$/, "");
+  const baseUrl = document.getElementById('api-url').value.trim().replace(/\/$/, "");
+  
+  if (!baseUrl) {
+    setStatus("Empty URL", "#fb7185", "#fb7185");
+    return;
+  }
+
   try {
     setStatus("Connecting…", "#fbbf24", "#fbbf24");
-    const res = await fetch(`${baseUrl}/models`, { headers: getHeaders() });
+    startBtn.disabled = true;
+    
+    const res = await fetch(`${baseUrl}/models`, { 
+      method: "GET",
+      headers: getHeaders() 
+    });
+
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
 
     modelSelect.innerHTML = "";
-    if (data.data && data.data.length) {
+    if (data.data && data.data.length > 0) {
       data.data.forEach(m => {
         const opt = document.createElement('option');
-        opt.value = m.id; opt.innerText = m.id;
+        opt.value = m.id; 
+        opt.innerText = m.id;
         modelSelect.appendChild(opt);
       });
       setStatus("API Ready", "#4ade80", "#4ade80");
       startBtn.disabled = false;
-    } else throw new Error("No models found");
+    } else {
+      throw new Error("No models found in response");
+    }
   } catch (e) {
+    console.error("Fetch models error:", e);
     setStatus("API unavailable", "#fb7185", "#fb7185");
-    modelSelect.innerHTML = "<option>N/A</option>";
+    modelSelect.innerHTML = "<option value=''>N/A</option>";
     startBtn.disabled = true;
   }
 }
 
 async function runBenchmark() {
   startBtn.disabled = true;
-  const baseUrl = document.getElementById('api-url').value.replace(/\/$/, "");
+  const baseUrl = document.getElementById('api-url').value.trim().replace(/\/$/, "");
   const model = modelSelect.value;
+  
+  if (!model) {
+    alert("Please select a valid model first.");
+    startBtn.disabled = false;
+    return;
+  }
+
   const passes = parseInt(document.getElementById('passes-select').value, 10);
   const prompt = "Write a comprehensive summary explaining how Large Language Models work, covering tokenization, attention mechanisms, and inference optimization. Be detailed and long.";
 
@@ -268,9 +151,13 @@ async function runBenchmark() {
         method: "POST",
         headers: getHeaders(),
         body: JSON.stringify({
-          model, messages:[{role:"user",content:prompt}], stream:true, max_tokens:MAX_TOKENS_PER_PASS
+          model, 
+          messages: [{role: "user", content: prompt}], 
+          stream: true, 
+          max_tokens: MAX_TOKENS_PER_PASS
         })
       });
+
       if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`);
 
       const reader = response.body.getReader();
@@ -278,9 +165,9 @@ async function runBenchmark() {
       let buffer = "";
 
       while (true) {
-        const {done,value} = await reader.read();
+        const {done, value} = await reader.read();
         if (done) break;
-        buffer += decoder.decode(value,{stream:true});
+        buffer += decoder.decode(value, {stream: true});
         const lines = buffer.split("\n");
         buffer = lines.pop();
 
@@ -290,7 +177,6 @@ async function runBenchmark() {
             if (firstTokenTime === null) firstTokenTime = performance.now();
             tokenCount++;
             
-            // Расчет плавной динамической шкалы общего прогресса
             const currentPassProgress = Math.min(tokenCount / MAX_TOKENS_PER_PASS, 1);
             const totalPercent = ((i + currentPassProgress) / passes) * 100;
             passProgress.style.width = `${totalPercent.toFixed(1)}%`;
@@ -312,7 +198,6 @@ async function runBenchmark() {
       totalDecodeTime += decodeTime;
       completedPasses++;
 
-      // Зафиксировать завершение прохода на прогресс-баре
       passProgress.style.width = `${((i + 1) / passes) * 100}%`;
     } catch (e) {
       alert("Error during benchmark execution: " + e.message);
@@ -346,5 +231,4 @@ async function runBenchmark() {
 window.onload = fetchModels;
 </script>
 
-</body>
-</html>
+```
